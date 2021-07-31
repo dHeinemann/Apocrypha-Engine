@@ -159,13 +159,42 @@ int main() {
         scanf("%s", input);
         printf("%s\n\n", input);
 
-        if      (strcmp(input, "n") == 0) { changedRooms = travel(DIRECTION_NORTH); }
-        else if (strcmp(input, "s") == 0) { changedRooms = travel(DIRECTION_SOUTH); }
-        else if (strcmp(input, "e") == 0) { changedRooms = travel(DIRECTION_EAST); }
-        else if (strcmp(input, "w") == 0) { changedRooms = travel(DIRECTION_WEST); }
-        else if (strcmp(input, "l") == 0) { printRoom(currentRoom); }
-        else if (strcmp(input, "exits") == 0) { printExits(currentRoom); }
-        else if (strcmp(input, "q") == 0) { break;        }
+        if (strcmp(input, "n") == 0 || strcmp(input, "north") == 0) {
+            changedRooms = travel(DIRECTION_NORTH);
+        }
+        else if (strcmp(input, "s") == 0 || strcmp(input, "south") == 0) {
+            changedRooms = travel(DIRECTION_SOUTH);
+        }
+        else if (strcmp(input, "e") == 0 || strcmp(input, "east") == 0) {
+            changedRooms = travel(DIRECTION_EAST);
+        }
+        else if (strcmp(input, "w") == 0 || strcmp(input, "west") == 0) {
+            changedRooms = travel(DIRECTION_WEST);
+        }
+        else if (strcmp(input, "u") == 0 || strcmp(input, "up") == 0) {
+            changedRooms = travel(DIRECTION_UP);
+        }
+        else if (strcmp(input, "d") == 0 || strcmp(input, "down") == 0) {
+            changedRooms = travel(DIRECTION_DOWN);
+        }
+        else if (strcmp(input, "in") == 0 || strcmp(input, "inside") == 0) {
+            changedRooms = travel(DIRECTION_IN);
+        }
+        else if (strcmp(input, "out") == 0 || strcmp(input, "outside") == 0) {
+            changedRooms = travel(DIRECTION_OUT);
+        }
+        else if (strcmp(input, "l") == 0 || strcmp(input, "look") == 0) {
+            printRoom(currentRoom);
+            printExits(currentRoom);
+        }
+        else if (strcmp(input, "exits") == 0) {
+            printExits(currentRoom);
+        }
+        else if (strcmp(input, "q") == 0 || strcmp(input, "quit") == 0) {
+            break;
+        } else {
+            printf("I don't understand what that means.");
+        }
     }
 
     for (i = 0; i < 6; i++) {
