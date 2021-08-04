@@ -4,16 +4,22 @@
 #include <string.h>
 
 #define INPUT_LEN 20
+#define MOB_NAME_MAX_LENGTH 10
+#define MAX_MOBS_PER_ROOM 10
 
-struct Mob {
+struct Mob
+{
     char* name;
     int hp;
+    int aggro;
 };
 
-struct Room {
+struct Room
+{
     char* name;
 
-    struct Mob* mob;
+    struct Mob** mobs;
+    int numberOfMobs;
 
     /* Exits */
     struct Room* north;
@@ -26,29 +32,97 @@ struct Room {
     struct Room* out;
 };
 
-struct Player {
+struct Player
+{
     int hp;
     struct Room* room;
 };
 
 static struct Player* player;
 
-void playerAttack(struct Mob* mob) {
+void addMob(struct Room* room, struct Mob* mob)
+{
+    if (room->mobs == NULL)
+    {
+        room->mobs = malloc(sizeof(struct Mob) * MAX_MOBS_PER_ROOM);
+    }
+    room->mobs[room->numberOfMobs++] = mob;
+}
+
+char* convertToLower(char* destination, char* source, int num)
+{
+    int i;
+
+    strncpy(destination, source, num);
+    for (i = 0; i < (int) strlen(destination); i++)
+    {
+        if (isupper(destination[i]))
+        {
+            destination[i] = tolower(destination[i]);
+        }
+    }
+
+    return destination;
+}
+
+
+/*
+ * Get the first mob matching the given name, or NULL if no match was found.
+ */
+struct Mob* getMobByName(char* name, struct Room* room)
+{
+    int i = 0;
+    char* nameToFind;
+    char* currentName;
+    struct Mob* mob;
+
+    nameToFind = malloc(sizeof(char) * MOB_NAME_MAX_LENGTH);
+    currentName = malloc(sizeof(char) * MOB_NAME_MAX_LENGTH);
+
+    mob = NULL;
+    if (name != NULL)
+    {
+        nameToFind = convertToLower(nameToFind, name, MOB_NAME_MAX_LENGTH);
+        for (i = 0; i < room->numberOfMobs; i++)
+        {
+            currentName = convertToLower(currentName, room->mobs[i]->name, MOB_NAME_MAX_LENGTH);
+            if (strstr(currentName, nameToFind) != NULL)
+            {
+                mob = room->mobs[i];
+                break;
+            }
+        }
+    }
+
+    free(nameToFind);
+    free(currentName);
+
+    return mob;
+}
+
+void playerAttack(struct Mob* mob)
+{
     const int damage = 2;
-    if (mob == NULL) {
+
+    if (mob == NULL)
+    {
         printf("There's nobody there!\n");
         return;
     }
 
     mob->hp -= damage;
-    printf("Your axe hacks into %s!, dealing %i damage!\n", mob->name, damage);
-    if (mob->hp <= 0) {
+    mob->aggro = 1;
+    printf("Your axe hacks into %s, dealing %i damage!\n", mob->name, damage);
+    if (mob->hp + damage > 0 && mob->hp <= 0)
+    {
         printf("You have slain %s!\n", mob->name);
     }
 }
 
-void mobAttack(struct Mob* mob) {
-    if (mob == NULL || mob->hp <= 0) {
+void mobAttack(struct Mob* mob)
+{
+    if (mob == NULL || mob->hp <= 0)
+    {
         return;
     }
 
@@ -57,7 +131,48 @@ void mobAttack(struct Mob* mob) {
     printf("%s slashes at you violently, dealing %i damage!\n",  mob->name, damage);
 }
 
-enum Direction {
+/**
+ * Resolve a combat turn.
+ * @returns 1 if the turn was resolved, or 0 if there was an error.
+ */
+int resolveCombat(char* target)
+{
+    int i;
+    struct Mob* targetMob;
+    struct Mob* currentMob;
+
+    if (player->room->numberOfMobs == 0)
+    {
+        if (target != NULL)
+        {
+            printf("There's nobody here to fight.\n");
+        }
+        return 1;
+    }
+
+    if (strlen(target) <= 2)
+    {
+        printf("Be more specific. Lives are at stake here!\n");
+        return 0;
+    }
+
+    targetMob = getMobByName(target, player->room);
+    playerAttack(targetMob);
+
+    for (i = 0; i < player->room->numberOfMobs; i++)
+    {
+        currentMob = player->room->mobs[i];
+        if (currentMob->hp > 0 && currentMob->aggro)
+        {
+            mobAttack(currentMob);
+        }
+    }
+
+    return 1;
+}
+
+enum Direction
+{
     DIRECTION_NORTH,
     DIRECTION_SOUTH,
     DIRECTION_EAST,
@@ -68,7 +183,8 @@ enum Direction {
     DIRECTION_OUT
 };
 
-int travel(enum Direction dir) {
+int travel(enum Direction dir)
+{
     struct Room* destination;
 
     destination = NULL;
@@ -81,21 +197,25 @@ int travel(enum Direction dir) {
     if (dir == DIRECTION_IN)    { destination = player->room->in;    }
     if (dir == DIRECTION_OUT)   { destination = player->room->out;   }
 
-    if (destination != NULL) {
+    if (destination != NULL)
+    {
         player->room = destination;
         return 1;
-    } else {
+    }
+    else
+    {
         printf("There is no exit in that direction.\n");
         return 0;
     }
 }
 
-struct Room* createRoom(char* name) {
+struct Room* createRoom(char* name)
+{
     struct Room* room;
     
     room = malloc(sizeof(struct Room));
     room->name = malloc(30);
-    room->mob = NULL;
+    room->mobs = NULL;
 
     strcpy(room->name, name);
     room->north = NULL;
@@ -110,34 +230,80 @@ struct Room* createRoom(char* name) {
     return room;
 }
 
-void destroyRoom(struct Room* room) {
-    if (room == NULL) {
+/*
+void linkRoom(struct Room** room1, struct Room** room2)
+{
+    room1 = *room2;
+    room2 = *room1;
+}
+*/
+
+struct Mob* createMob(char* name, int hp)
+{
+    struct Mob* mob;
+    mob = malloc(sizeof(struct Mob));
+    mob->name = name;
+    mob->hp = hp;
+    mob->aggro = 0;
+
+    return mob;
+}
+
+void destroyRoom(struct Room* room)
+{
+    if (room == NULL)
         return;
-    }
 
     free(room->name);
-    free(room->mob);
+    free(room->mobs);
     free(room);
 }
 
-void printRoom(struct Room* room) {
+void printRoom(struct Room* room)
+{
     int i;
 
     i = 0;
-    while (room->name[i]) {
+    while (room->name[i])
+    {
         printf("%c", (char) toupper((int) room->name[i]));
         i++;
     }
     printf("\n");
 }
 
-void printMobs(struct Room* room) {
-    if (room->mob != NULL) {
-        printf("%s is here.\n", room->mob->name);
+void printMobs(struct Room* room)
+{
+    int i;
+
+    if (room->numberOfMobs == 1)
+    {
+        printf("%s is here.\n", room->mobs[0]->name);
+    }
+    else
+    {
+        for (i = 0; i < room->numberOfMobs; i++)
+        {
+            if (room->numberOfMobs > 1 && i == room->numberOfMobs - 1)
+            {
+                printf("and ");
+            }
+
+            printf(room->mobs[i]->name);
+            if (i == room->numberOfMobs - 1)
+            {
+                printf(" are here.\n");
+            }
+            else
+            {
+                printf(", ");
+            }
+        }
     }
 }
 
-void printExits(struct Room* room) {
+void printExits(struct Room* room)
+{
     printf("Exits:\n");
     printf("  ");
     if (room->north != NULL) { printf("north "); }
@@ -151,7 +317,13 @@ void printExits(struct Room* room) {
     printf("\n");
 }
 
-struct Room* initWorld(struct Room* rooms[]) {
+void printVitals()
+{
+    printf("HP: %i\n", player->hp);
+}
+
+struct Room* initWorld(struct Room* rooms[])
+{
     struct Room* parlor;
     struct Room* livingRoom;
     struct Room* hallway;
@@ -166,9 +338,7 @@ struct Room* initWorld(struct Room* rooms[]) {
     bedroom = createRoom("Bedroom");
     bathroom = createRoom("Bathroom");
 
-    parlor->mob = malloc(sizeof(struct Mob));
-    parlor->mob->name = "The orc";
-    parlor->mob->hp = 6;
+    addMob(parlor, createMob("an orc", 6));
 
     parlor->west = livingRoom;
     livingRoom->east = parlor;
@@ -195,11 +365,29 @@ struct Room* initWorld(struct Room* rooms[]) {
     return parlor;
 }
 
-int main() {
+int startsWith(char* string, char* target)
+{
+    return strncmp(string, target, strlen(target)) == 0;
+}
+
+char* getInput(char* buffer)
+{
+    fgets(buffer, INPUT_LEN, stdin);
+    buffer[strcspn(buffer, "\n")] = 0; /* Remove newline */
+    buffer = convertToLower(buffer, buffer, INPUT_LEN);
+
+    return buffer;
+}
+
+int main()
+{
     int i;
-    char input[INPUT_LEN];
+    char* input;
     struct Room* rooms[6];
     int changedRooms;
+    char* token;
+
+    input = malloc(sizeof(char) * INPUT_LEN);
 
     player = malloc(sizeof(struct Player));
     player->hp = 6;
@@ -209,61 +397,88 @@ int main() {
     printExits(player->room);
 
     changedRooms = 0;
-    while (1) {
-        if (changedRooms) {
+    while (1)
+    {
+        if (changedRooms)
+        {
             printRoom(player->room);
             printMobs(player->room);
             printExits(player->room);
             changedRooms = 0;
         }
 
-        printf("\n> ");
-        scanf("%s", input);
+        printVitals();
+        printf("> ");
+        input = getInput(input);
         printf("%s\n\n", input);
 
-        if (strcmp(input, "n") == 0 || strcmp(input, "north") == 0) {
+        if (strcmp(input, "n") == 0 || strcmp(input, "north") == 0)
+        {
             changedRooms = travel(DIRECTION_NORTH);
         }
-        else if (strcmp(input, "s") == 0 || strcmp(input, "south") == 0) {
+        else if (strcmp(input, "s") == 0 || strcmp(input, "south") == 0)
+        {
             changedRooms = travel(DIRECTION_SOUTH);
         }
-        else if (strcmp(input, "e") == 0 || strcmp(input, "east") == 0) {
+        else if (strcmp(input, "e") == 0 || strcmp(input, "east") == 0)
+        {
             changedRooms = travel(DIRECTION_EAST);
         }
-        else if (strcmp(input, "w") == 0 || strcmp(input, "west") == 0) {
+        else if (strcmp(input, "w") == 0 || strcmp(input, "west") == 0)
+        {
             changedRooms = travel(DIRECTION_WEST);
         }
-        else if (strcmp(input, "u") == 0 || strcmp(input, "up") == 0) {
+        else if (strcmp(input, "u") == 0 || strcmp(input, "up") == 0)
+        {
             changedRooms = travel(DIRECTION_UP);
         }
-        else if (strcmp(input, "d") == 0 || strcmp(input, "down") == 0) {
+        else if (strcmp(input, "d") == 0 || strcmp(input, "down") == 0)
+        {
             changedRooms = travel(DIRECTION_DOWN);
         }
-        else if (strcmp(input, "in") == 0 || strcmp(input, "inside") == 0) {
+        else if (strcmp(input, "in") == 0 || strcmp(input, "inside") == 0)
+        {
             changedRooms = travel(DIRECTION_IN);
         }
-        else if (strcmp(input, "out") == 0 || strcmp(input, "outside") == 0) {
+        else if (strcmp(input, "out") == 0 || strcmp(input, "outside") == 0)
+        {
             changedRooms = travel(DIRECTION_OUT);
         }
-        else if (strcmp(input, "kill") == 0) {
-            playerAttack(player->room->mob);
-            mobAttack(player->room->mob);
+        else if (startsWith(input, "kill "))
+        {
+            token = strtok(input, " "); /* first token will be "kill" */
+            token = strtok(NULL, " ");  /* second token should be target name */
+            if (token != NULL && strlen(token) > 0)
+            {
+                resolveCombat(token);
+            }
+            else
+            {
+                printf("Kill whom?\n");
+            }
         }
-        else if (strcmp(input, "l") == 0 || strcmp(input, "look") == 0) {
+        else if (strcmp(input, "l") == 0 || strcmp(input, "look") == 0)
+        {
             printRoom(player->room);
             printExits(player->room);
         }
-        else if (strcmp(input, "exits") == 0) {
+        else if (strcmp(input, "exits") == 0)
+        {
             printExits(player->room);
         }
-        else if (strcmp(input, "q") == 0 || strcmp(input, "quit") == 0) {
+        else if (strcmp(input, "q") == 0 || strcmp(input, "quit") == 0)
+        {
             break;
-        } else {
-            printf("I don't understand what that means.");
+        }
+        else
+        {
+            printf("I don't understand what that means.\n");
         }
     }
 
-    for (i = 0; i < 6; i++) {
+    free(input);
+    for (i = 0; i < 6; i++)
+    {
         destroyRoom(rooms[i]);
     }
 
