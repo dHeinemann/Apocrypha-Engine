@@ -1,7 +1,9 @@
 #include <ctype.h>
 #include <malloc.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define INPUT_LEN 20
 #define MOB_NAME_MAX_LENGTH 10
@@ -11,6 +13,7 @@ struct Mob
 {
     char* name;
     int hp;
+    int ac;
     int aggro;
 };
 
@@ -35,6 +38,7 @@ struct Room
 struct Player
 {
     int hp;
+    int ac;
     struct Room* room;
 };
 
@@ -100,9 +104,15 @@ struct Mob* getMobByName(char* name, struct Room* room)
     return mob;
 }
 
+int getDiceRoll(int min, int max)
+{
+    return rand() % max + min;
+}
+
 void playerAttack(struct Mob* mob)
 {
-    const int damage = 2;
+    int attack;
+    int damage;
 
     if (mob == NULL)
     {
@@ -110,25 +120,70 @@ void playerAttack(struct Mob* mob)
         return;
     }
 
-    mob->hp -= damage;
     mob->aggro = 1;
+    attack = getDiceRoll(1, 20);
+    if (attack < mob->ac)
+    {
+        printf("Your attack misses %s!\n", mob->name);
+        return;
+    }
+
+    damage = getDiceRoll(1, 6);
+
+    mob->hp -= damage;
     printf("Your axe hacks into %s, dealing %i damage!\n", mob->name, damage);
     if (mob->hp + damage > 0 && mob->hp <= 0)
-    {
         printf("You have slain %s!\n", mob->name);
+}
+
+/**
+ * Convert the first character of a string to upper case.
+ * @param in String to convert.
+ * @param out Converted string.
+ */
+char* firstCharToUpper(char* in, char* out)
+{
+    if (in == NULL)
+    {
+        out = NULL;
     }
+    else if (strlen(in) == 0)
+    {
+        out = "";
+    }
+    else
+    {
+        strncpy(out, in, MOB_NAME_MAX_LENGTH);
+        if (islower(out[0]))
+            out[0] = toupper(out[0]);
+    }
+
+    return out;
 }
 
 void mobAttack(struct Mob* mob)
 {
+    int attack;
+    int damage;
+    char* mobName;
+
     if (mob == NULL || mob->hp <= 0)
+        return;
+
+    mobName = malloc(MOB_NAME_MAX_LENGTH);
+    firstCharToUpper(mob->name, mobName);
+
+    attack = getDiceRoll(1, 20);
+    if (attack < player->ac)
     {
+        printf("%s misses their attack!\n", mobName);
         return;
     }
 
-    const int damage = 1;
+    damage = getDiceRoll(1, 6);
     player->hp -= damage;
-    printf("%s slashes at you violently, dealing %i damage!\n",  mob->name, damage);
+    printf("%s slashes at you violently, dealing %i damage!\n",  mobName, damage);
+    free(mobName);
 }
 
 /**
@@ -166,6 +221,12 @@ int resolveCombat(char* target)
         {
             mobAttack(currentMob);
         }
+    }
+
+    if (player->hp <= 0)
+    {
+        printf("Oh dear, you are dead!\n");
+        exit(0);
     }
 
     return 1;
@@ -230,12 +291,13 @@ struct Room* createRoom(char* name)
     return room;
 }
 
-struct Mob* createMob(char* name, int hp)
+struct Mob* createMob(char* name, int hp, int ac)
 {
     struct Mob* mob;
     mob = malloc(sizeof(struct Mob));
     mob->name = name;
     mob->hp = hp;
+    mob->ac = ac;
     mob->aggro = 0;
 
     return mob;
@@ -372,7 +434,7 @@ struct Room* initWorld(struct Room* rooms[])
     bedroom = createRoom("Bedroom");
     bathroom = createRoom("Bathroom");
 
-    addMob(parlor, createMob("an orc", 6));
+    addMob(parlor, createMob("an orc", 6, 8));
 
     parlor->west = livingRoom;
     livingRoom->east = parlor;
@@ -421,10 +483,13 @@ int main()
     int changedRooms;
     char* token;
 
+    srand(time(NULL)); /* Seed RNG */
+
     input = malloc(sizeof(char) * INPUT_LEN);
 
     player = malloc(sizeof(struct Player));
     player->hp = 6;
+    player->ac = 12;
     player->room = initWorld(rooms);
     printRoom(player->room);
     printMobs(player->room);
@@ -441,10 +506,10 @@ int main()
             changedRooms = 0;
         }
 
+        printf("\n");
         printVitals();
         printf("> ");
         input = trim(getInput(input));
-        printf("%s\n\n", input);
 
         if (strcmp(input, "n") == 0 || strcmp(input, "north") == 0)
         {
