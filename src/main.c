@@ -230,14 +230,6 @@ struct Room* createRoom(char* name)
     return room;
 }
 
-/*
-void linkRoom(struct Room** room1, struct Room** room2)
-{
-    room1 = *room2;
-    room2 = *room1;
-}
-*/
-
 struct Mob* createMob(char* name, int hp)
 {
     struct Mob* mob;
@@ -259,6 +251,10 @@ void destroyRoom(struct Room* room)
     free(room);
 }
 
+/**
+ * Print a room's name and description.
+ * @param room Room to print.
+ */
 void printRoom(struct Room* room)
 {
     int i;
@@ -272,6 +268,10 @@ void printRoom(struct Room* room)
     printf("\n");
 }
 
+/**
+ * Print a list of visible NPCs or monsters in a room.
+ * @param room Room to print mobs for.
+ */
 void printMobs(struct Room* room)
 {
     int i;
@@ -302,24 +302,31 @@ void printMobs(struct Room* room)
     }
 }
 
+/**
+ * Print a list of visible exits from a room.
+ * @params room Room to print exits for.
+ */
 void printExits(struct Room* room)
 {
-    printf("Exits:\n");
-    printf("  ");
-    if (room->north != NULL) { printf("north "); }
-    if (room->south != NULL) { printf("south "); }
-    if (room->east  != NULL) { printf("east ");  }
-    if (room->west  != NULL) { printf("west ");  }
-    if (room->up    != NULL) { printf("up ");    }
-    if (room->down  != NULL) { printf("down ");  }
-    if (room->in    != NULL) { printf("in ");    }
-    if (room->out   != NULL) { printf("out ");   }
+    int numExits = 0;
+    printf("Exits: ");
+    if (room->north != NULL) { if (numExits) { printf(", "); } printf("north"); numExits++; }
+    if (room->south != NULL) { if (numExits) { printf(", "); } printf("south"); numExits++; }
+    if (room->east  != NULL) { if (numExits) { printf(", "); } printf("east");  numExits++; }
+    if (room->west  != NULL) { if (numExits) { printf(", "); } printf("west");  numExits++; }
+    if (room->up    != NULL) { if (numExits) { printf(", "); } printf("up");    numExits++; }
+    if (room->down  != NULL) { if (numExits) { printf(", "); } printf("down");  numExits++; }
+    if (room->in    != NULL) { if (numExits) { printf(", "); } printf("in");    numExits++; }
+    if (room->out   != NULL) { if (numExits) { printf(", "); } printf("out");   numExits++; }
     printf("\n");
 }
 
+/**
+ * Print the hero's vitals.
+ */
 void printVitals()
 {
-    printf("HP: %i\n", player->hp);
+    printf("[HP: %i] ", player->hp);
 }
 
 struct Room* initWorld(struct Room* rooms[])
@@ -443,6 +450,9 @@ int main()
         else if (strcmp(input, "out") == 0 || strcmp(input, "outside") == 0)
         {
             changedRooms = travel(DIRECTION_OUT);
+        }
+        else if (strcmp(input, "kill") == 0) {
+            printf("Kill whom?\n");
         }
         else if (startsWith(input, "kill "))
         {
