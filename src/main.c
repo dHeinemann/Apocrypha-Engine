@@ -329,6 +329,33 @@ void printVitals()
     printf("[HP: %i] ", player->hp);
 }
 
+/**
+ * Trim whitespace surrounding a string.
+ * @param str String to trim.
+ */
+char* trim(char* str)
+{
+    int i;
+
+    /* Trim start */
+    for (i = 0; (size_t) i < strlen(str); i++)
+    {
+        if (!isspace(str[i]))
+            break;
+        str++;
+    }
+
+    /* Trim end */
+    for (i = (int) strlen(str) - 1; i >= 0; i--)
+    {
+        if (!isspace(str[i]))
+            break;
+        str[i] = '\0';
+    }
+
+    return str;
+}
+
 struct Room* initWorld(struct Room* rooms[])
 {
     struct Room* parlor;
@@ -416,7 +443,7 @@ int main()
 
         printVitals();
         printf("> ");
-        input = getInput(input);
+        input = trim(getInput(input));
         printf("%s\n\n", input);
 
         if (strcmp(input, "n") == 0 || strcmp(input, "north") == 0)
@@ -451,10 +478,7 @@ int main()
         {
             changedRooms = travel(DIRECTION_OUT);
         }
-        else if (strcmp(input, "kill") == 0) {
-            printf("Kill whom?\n");
-        }
-        else if (startsWith(input, "kill "))
+        else if (startsWith(input, "kill"))
         {
             token = strtok(input, " "); /* first token will be "kill" */
             token = strtok(NULL, " ");  /* second token should be target name */
