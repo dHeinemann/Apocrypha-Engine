@@ -8,6 +8,7 @@
 struct Room
 {
     char* name;
+    char* description;
 
     struct Npc** mobs;
     int numberOfMobs;
@@ -35,7 +36,7 @@ void addMob(struct Room* room, struct Npc* mob);
  * @param name Name of room.
  * @returns The created room.
  */
-struct Room* createRoom(char* name);
+struct Room* createRoom(char* name, char* description);
 
 /**
  * Destroy and deallocate a room.

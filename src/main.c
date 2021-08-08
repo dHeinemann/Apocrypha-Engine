@@ -159,13 +159,12 @@ void printRoom(struct Room* room)
 {
     int i;
 
-    i = 0;
-    while (room->name[i])
-    {
+    for (i = 0; i < (int) strlen(room->name); i++)
         printf("%c", (char) toupper((int) room->name[i]));
-        i++;
-    }
+
     printf("\n");
+
+    printf("%s\n\n", room->description);
 }
 
 /**
@@ -242,12 +241,12 @@ struct Room* initWorld(struct Room* rooms[])
     struct Room* bedroom;
     struct Room* bathroom;
 
-    parlor = createRoom("Parlor");
-    livingRoom = createRoom("Living Room");
-    hallway = createRoom("Hallway");
-    kitchen = createRoom("Kitchen");
-    bedroom = createRoom("Bedroom");
-    bathroom = createRoom("Bathroom");
+    parlor = createRoom("Parlor", "parlor desc");
+    livingRoom = createRoom("Living Room", "living room desc");
+    hallway = createRoom("Hallway", "hallway desc");
+    kitchen = createRoom("Kitchen", "kitchen desc");
+    bedroom = createRoom("Bedroom", "bedroom desc");
+    bathroom = createRoom("Bathroom", "bathroom desc");
 
     addMob(parlor, createNpc("an orc", 6, 8));
 

@@ -16,16 +16,18 @@ void addMob(struct Room* room, struct Npc* mob)
     room->mobs[room->numberOfMobs++] = mob;
 }
 
-struct Room* createRoom(char* name)
+struct Room* createRoom(char* name, char* description)
 {
     struct Room* room;
     
     room = malloc(sizeof(struct Room));
-    room->name = malloc(30);
+    room->name = malloc(ROOM_NAME_MAX_LENGTH);
+    room->description = malloc(ROOM_DESCRIPTION_MAX_LENGTH);
     room->mobs = NULL;
     room->numberOfMobs = 0;
 
     strcpy(room->name, name);
+    strcpy(room->description, description);
     room->north = NULL;
     room->south = NULL;
     room->east = NULL;
@@ -46,6 +48,7 @@ void destroyRoom(struct Room* room)
         return;
 
     free(room->name);
+    free(room->description);
     for (i = 0; i < room->numberOfMobs; i++) free(room->mobs[i]);
     free(room->mobs);
     free(room);
