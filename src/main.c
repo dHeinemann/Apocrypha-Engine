@@ -75,12 +75,14 @@ void mobAttack(struct Mob* mob)
     if (attack < player->ac)
     {
         printf("%s misses their attack!\n", mobName);
-        return;
+    }
+    else
+    {
+        damage = getDiceRoll(1, 6);
+        player->hp -= damage;
+        printf("%s slashes at you violently, dealing %i damage!\n",  mobName, damage);
     }
 
-    damage = getDiceRoll(1, 6);
-    player->hp -= damage;
-    printf("%s slashes at you violently, dealing %i damage!\n",  mobName, damage);
     free(mobName);
 }
 
@@ -281,10 +283,14 @@ struct Room* initWorld(struct Room* rooms[])
  */
 char* getInput(char* buffer)
 {
-    fgets(buffer, INPUT_LEN, stdin);
-    buffer[strcspn(buffer, "\n")] = 0; /* Remove newline */
-    buffer = convertToLower(buffer, buffer, INPUT_LEN);
+    char* input;
 
+    input = malloc(INPUT_LEN);
+    fgets(input, INPUT_LEN, stdin);
+    input[strcspn(input, "\n")] = 0; /* Remove newline */
+    buffer = convertToLower(buffer, input, INPUT_LEN);
+
+    free(input);
     return buffer;
 }
 
@@ -295,7 +301,7 @@ void initPlayer()
     player->ac = 12;
 }
 
-void runMainLoop()
+void mainLoop()
 {
     char* input;
     int changedRooms;
@@ -399,7 +405,7 @@ int main()
     printMobs(player->room);
     printExits(player->room);
 
-    runMainLoop();
+    mainLoop();
 
     for (i = 0; i < 6; i++)
     {

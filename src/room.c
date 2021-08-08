@@ -23,6 +23,7 @@ struct Room* createRoom(char* name)
     room = malloc(sizeof(struct Room));
     room->name = malloc(30);
     room->mobs = NULL;
+    room->numberOfMobs = 0;
 
     strcpy(room->name, name);
     room->north = NULL;
