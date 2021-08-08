@@ -2,8 +2,8 @@
  * NPCs and monsters.
  */
 
-#ifndef MOB_H
-#define MOB_H
+#ifndef NPC_H
+#define NPC_H
 
 struct Npc
 {

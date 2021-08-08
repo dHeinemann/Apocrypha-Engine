@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "limits.h"
-#include "mob.h"
+#include "npc.h"
 #include "strfun.h"
 
 struct Npc* createNpc(char* name, int hitPoints, int armorClass)

@@ -4,7 +4,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "mob.h"
+#include "npc.h"
 #include "limits.h"
 #include "player.h"
 #include "room.h"
@@ -25,65 +25,65 @@ int getDiceRoll(int min, int max)
 }
 
 /**
- * Resolve the player's attack against a mob.
- * @param mob Npc to attack.
+ * Resolve the player's attack against an NPC.
+ * @param npc NPC to attack.
  */
-void playerAttack(struct Npc* mob)
+void playerAttack(struct Npc* npc)
 {
     int attack;
     int damage;
 
-    if (mob == NULL)
+    if (npc == NULL)
     {
         printf("There's nobody there!\n");
         return;
     }
 
-    mob->hostile = 1;
+    npc->hostile = 1;
     attack = getDiceRoll(1, 20);
-    if (attack < mob->armorClass)
+    if (attack < npc->armorClass)
     {
-        printf("Your attack misses %s!\n", mob->name);
+        printf("Your attack misses %s!\n", npc->name);
         return;
     }
 
     damage = getDiceRoll(1, 6);
 
-    mob->hitPoints -= damage;
-    printf("Your axe hacks into %s, dealing %i damage!\n", mob->name, damage);
-    if (mob->hitPoints + damage > 0 && mob->hitPoints <= 0)
-        printf("You have slain %s!\n", mob->name);
+    npc->hitPoints -= damage;
+    printf("Your axe hacks into %s, dealing %i damage!\n", npc->name, damage);
+    if (npc->hitPoints + damage > 0 && npc->hitPoints <= 0)
+        printf("You have slain %s!\n", npc->name);
 }
 
 /**
- * Resolve a mob's attack against the player.
- * @param mob Npc whose attack to resolve.
+ * Resolve a npc's attack against the player.
+ * @param npc Npc whose attack to resolve.
  */
-void mobAttack(struct Npc* mob)
+void npcAttack(struct Npc* npc)
 {
     int attack;
     int damage;
-    char* mobName;
+    char* npcName;
 
-    if (mob == NULL || mob->hitPoints <= 0)
+    if (npc == NULL || npc->hitPoints <= 0)
         return;
 
-    mobName = malloc(MOB_NAME_MAX_LENGTH);
-    firstCharToUpper(mob->name, mobName);
+    npcName = malloc(NPC_NAME_MAX_LENGTH);
+    firstCharToUpper(npcName, npc->name);
 
     attack = getDiceRoll(1, 20);
     if (attack < player->armorClass)
     {
-        printf("%s misses their attack!\n", mobName);
+        printf("%s misses their attack!\n", npcName);
     }
     else
     {
         damage = getDiceRoll(1, 6);
         player->hitPoints -= damage;
-        printf("%s slashes at you violently, dealing %i damage!\n",  mobName, damage);
+        printf("%s slashes at you violently, dealing %i damage!\n",  npcName, damage);
     }
 
-    free(mobName);
+    free(npcName);
 }
 
 /**
@@ -93,10 +93,10 @@ void mobAttack(struct Npc* mob)
 int resolveCombat(char* target)
 {
     int i;
-    struct Npc* targetMob;
-    struct Npc* currentMob;
+    struct Npc* targetNpc;
+    struct Npc* currentNpc;
 
-    if (player->room->numberOfMobs == 0)
+    if (player->room->numberOfNpcs == 0)
     {
         if (target != NULL)
         {
@@ -111,15 +111,15 @@ int resolveCombat(char* target)
         return 0;
     }
 
-    targetMob = getMobByName(target, player->room);
-    playerAttack(targetMob);
+    targetNpc = getNpcByName(target, player->room);
+    playerAttack(targetNpc);
 
-    for (i = 0; i < player->room->numberOfMobs; i++)
+    for (i = 0; i < player->room->numberOfNpcs; i++)
     {
-        currentMob = player->room->mobs[i];
-        if (currentMob->hitPoints > 0 && currentMob->hostile)
+        currentNpc = player->room->npcs[i];
+        if (currentNpc->hitPoints > 0 && currentNpc->hostile)
         {
-            mobAttack(currentMob);
+            npcAttack(currentNpc);
         }
     }
 
@@ -164,34 +164,41 @@ void printRoom(struct Room* room)
 
     printf("\n");
 
-    printf("%s\n\n", room->description);
+    printf("%s", room->description);
 }
 
 /**
  * Print a list of visible NPCs or monsters in a room.
- * @param room Room to print mobs for.
+ * @param room Room to print NPCs for.
  */
-void printMobs(struct Room* room)
+void printNpcs(struct Room* room, int showNoNpcsMessage)
 {
     int i;
+    char* npcName;
 
-    if (room->numberOfMobs == 1)
+    npcName = malloc(NPC_NAME_MAX_LENGTH);
+
+    if (room->numberOfNpcs == 0 && showNoNpcsMessage)
     {
-        printf("%s is here.\n", room->mobs[0]->name);
+        printf("You don't see anybody here.");
+    }
+    else if (room->numberOfNpcs == 1)
+    {
+        printf("%s is here.", firstCharToUpper(npcName, room->npcs[0]->name));
     }
     else
     {
-        for (i = 0; i < room->numberOfMobs; i++)
+        for (i = 0; i < room->numberOfNpcs; i++)
         {
-            if (room->numberOfMobs > 1 && i == room->numberOfMobs - 1)
+            if (room->numberOfNpcs > 1 && i == room->numberOfNpcs - 1)
             {
                 printf("and ");
             }
 
-            printf(room->mobs[i]->name);
-            if (i == room->numberOfMobs - 1)
+            printf(firstCharToUpper(npcName, room->npcs[i]->name));
+            if (i == room->numberOfNpcs - 1)
             {
-                printf(" are here.\n");
+                printf(" are here.");
             }
             else
             {
@@ -199,6 +206,8 @@ void printMobs(struct Room* room)
             }
         }
     }
+
+    free(npcName);
 }
 
 /**
@@ -217,7 +226,6 @@ void printExits(struct Room* room)
     if (room->down  != NULL) { if (numExits) { printf(", "); } printf("down");  numExits++; }
     if (room->in    != NULL) { if (numExits) { printf(", "); } printf("in");    numExits++; }
     if (room->out   != NULL) { if (numExits) { printf(", "); } printf("out");   numExits++; }
-    printf("\n");
 }
 
 /**
@@ -234,45 +242,21 @@ void printVitals()
  */
 struct Room* initWorld(struct Room* rooms[])
 {
-    struct Room* parlor;
-    struct Room* livingRoom;
-    struct Room* hallway;
-    struct Room* kitchen;
-    struct Room* bedroom;
-    struct Room* bathroom;
+    struct Room* shack;
+    struct Room* cellar;
 
-    parlor = createRoom("Parlor", "parlor desc");
-    livingRoom = createRoom("Living Room", "living room desc");
-    hallway = createRoom("Hallway", "hallway desc");
-    kitchen = createRoom("Kitchen", "kitchen desc");
-    bedroom = createRoom("Bedroom", "bedroom desc");
-    bathroom = createRoom("Bathroom", "bathroom desc");
+    shack = createRoom("Abandoned Shack", "You stand inside an abandoned, rundown shack. The windows have been "
+        "boarded up from the inside. In the corner is a ladder descending downward.");
+    cellar = createRoom("Spooky Cellar", "It is dark here. You are likely to be eaten by a grue.");
 
-    addMob(parlor, createNpc("an orc", 6, 8));
+    addNpc(shack, createNpc("an orc", 6, 8));
+    shack->down = cellar;
+    cellar->up = shack;
 
-    parlor->west = livingRoom;
-    livingRoom->east = parlor;
+    rooms[0] = shack;
+    rooms[1] = cellar;
 
-    livingRoom->north = hallway;
-    hallway->south = livingRoom;
-
-    hallway->north = bathroom;
-    bathroom->south = hallway;
-
-    hallway->east = bedroom;
-    bedroom->west = hallway;
-
-    hallway->west = kitchen;
-    kitchen->east = hallway;
-
-    rooms[0] = parlor;
-    rooms[1] = livingRoom;
-    rooms[2] = hallway;
-    rooms[3] = kitchen;
-    rooms[4] = bedroom;
-    rooms[5] = bathroom;
-
-    return parlor;
+    return shack;
 }
 
 /**
@@ -300,6 +284,16 @@ void initPlayer()
     player->armorClass = 12;
 }
 
+void printRoomDetailed(struct Room* room)
+{
+    printRoom(room);
+    printf(" ");
+    printNpcs(room, 0);
+    printf("\n");
+    printExits(room);
+    printf("\n");
+}
+
 void mainLoop()
 {
     char* input;
@@ -312,9 +306,7 @@ void mainLoop()
     {
         if (changedRooms)
         {
-            printRoom(player->room);
-            printMobs(player->room);
-            printExits(player->room);
+            printRoomDetailed(player->room);
             changedRooms = 0;
         }
 
@@ -370,12 +362,17 @@ void mainLoop()
         }
         else if (strcmp(input, "l") == 0 || strcmp(input, "look") == 0)
         {
-            printRoom(player->room);
-            printExits(player->room);
+            printRoomDetailed(player->room);
         }
         else if (strcmp(input, "exits") == 0)
         {
             printExits(player->room);
+            printf("\n");
+        }
+        else if (strcmp(input, "mobs") == 0)
+        {
+            printNpcs(player->room, 1);
+            printf("\n");
         }
         else if (strcmp(input, "q") == 0 || strcmp(input, "quit") == 0)
         {
@@ -400,13 +397,10 @@ int main()
     initPlayer();
     player->room = initWorld(rooms);
 
-    printRoom(player->room);
-    printMobs(player->room);
-    printExits(player->room);
-
+    printRoomDetailed(player->room);
     mainLoop();
 
-    for (i = 0; i < 6; i++)
+    for (i = 0; i < 1; i++)
     {
         destroyRoom(rooms[i]);
     }

@@ -20,24 +20,24 @@ char* convertToLower(char* destination, char* source, int num)
     return destination;
 }
 
-char* firstCharToUpper(char* in, char* out)
+char* firstCharToUpper(char* destination, char* source)
 {
-    if (in == NULL)
+    if (source == NULL)
     {
-        out = NULL;
+        destination = NULL;
     }
-    else if (strlen(in) == 0)
+    else if (strlen(source) == 0)
     {
-        out = "";
+        destination = "";
     }
     else
     {
-        strncpy(out, in, MOB_NAME_MAX_LENGTH);
-        if (islower(out[0]))
-            out[0] = toupper(out[0]);
+        strncpy(destination, source, NPC_NAME_MAX_LENGTH);
+        if (islower(destination[0]))
+            destination[0] = toupper(destination[0]);
     }
 
-    return out;
+    return destination;
 }
 
 int startsWith(char* string, char* target)

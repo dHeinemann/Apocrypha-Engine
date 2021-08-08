@@ -7,10 +7,10 @@
 
 /**
  * Convert the first character of a string to upper case.
- * @param in String to convert.
- * @param out Converted string.
+ * @param destination Converted string.
+ * @param source String to convert.
  */
-char* firstCharToUpper(char* in, char* out);
+char* firstCharToUpper(char* destination, char* source);
 
 /**
  * Convert a string to lower case.

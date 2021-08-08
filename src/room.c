@@ -3,17 +3,17 @@
 #include <string.h>
 
 #include "limits.h"
-#include "mob.h"
+#include "npc.h"
 #include "room.h"
 #include "strfun.h"
 
-void addMob(struct Room* room, struct Npc* mob)
+void addNpc(struct Room* room, struct Npc* npc)
 {
-    if (room->mobs == NULL)
+    if (room->npcs == NULL)
     {
-        room->mobs = malloc(sizeof(struct Npc) * MAX_MOBS_PER_ROOM);
+        room->npcs = malloc(sizeof(struct Npc) * MAX_NPCS_PER_ROOM);
     }
-    room->mobs[room->numberOfMobs++] = mob;
+    room->npcs[room->numberOfNpcs++] = npc;
 }
 
 struct Room* createRoom(char* name, char* description)
@@ -23,8 +23,8 @@ struct Room* createRoom(char* name, char* description)
     room = malloc(sizeof(struct Room));
     room->name = malloc(ROOM_NAME_MAX_LENGTH);
     room->description = malloc(ROOM_DESCRIPTION_MAX_LENGTH);
-    room->mobs = NULL;
-    room->numberOfMobs = 0;
+    room->npcs = NULL;
+    room->numberOfNpcs = 0;
 
     strcpy(room->name, name);
     strcpy(room->description, description);
@@ -49,31 +49,31 @@ void destroyRoom(struct Room* room)
 
     free(room->name);
     free(room->description);
-    for (i = 0; i < room->numberOfMobs; i++) free(room->mobs[i]);
-    free(room->mobs);
+    for (i = 0; i < room->numberOfNpcs; i++) free(room->npcs[i]);
+    free(room->npcs);
     free(room);
 }
 
-struct Npc* getMobByName(char* name, struct Room* room)
+struct Npc* getNpcByName(char* name, struct Room* room)
 {
     int i = 0;
     char* nameToFind;
     char* currentName;
-    struct Npc* mob;
+    struct Npc* npc;
 
-    nameToFind = malloc(sizeof(char) * MOB_NAME_MAX_LENGTH);
-    currentName = malloc(sizeof(char) * MOB_NAME_MAX_LENGTH);
+    nameToFind = malloc(sizeof(char) * NPC_NAME_MAX_LENGTH);
+    currentName = malloc(sizeof(char) * NPC_NAME_MAX_LENGTH);
 
-    mob = NULL;
+    npc = NULL;
     if (name != NULL)
     {
-        nameToFind = convertToLower(nameToFind, name, MOB_NAME_MAX_LENGTH);
-        for (i = 0; i < room->numberOfMobs; i++)
+        nameToFind = convertToLower(nameToFind, name, NPC_NAME_MAX_LENGTH);
+        for (i = 0; i < room->numberOfNpcs; i++)
         {
-            currentName = convertToLower(currentName, room->mobs[i]->name, MOB_NAME_MAX_LENGTH);
+            currentName = convertToLower(currentName, room->npcs[i]->name, NPC_NAME_MAX_LENGTH);
             if (strstr(currentName, nameToFind) != NULL)
             {
-                mob = room->mobs[i];
+                npc = room->npcs[i];
                 break;
             }
         }
@@ -82,5 +82,5 @@ struct Npc* getMobByName(char* name, struct Room* room)
     free(nameToFind);
     free(currentName);
 
-    return mob;
+    return npc;
 }
