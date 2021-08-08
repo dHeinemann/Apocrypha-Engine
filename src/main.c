@@ -1,108 +1,16 @@
 #include <ctype.h>
-#include <malloc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-#define INPUT_LEN 20
-#define MOB_NAME_MAX_LENGTH 10
-#define MAX_MOBS_PER_ROOM 10
-
-struct Mob
-{
-    char* name;
-    int hp;
-    int ac;
-    int aggro;
-};
-
-struct Room
-{
-    char* name;
-
-    struct Mob** mobs;
-    int numberOfMobs;
-
-    /* Exits */
-    struct Room* north;
-    struct Room* south;
-    struct Room* east;
-    struct Room* west;
-    struct Room* up;
-    struct Room* down;
-    struct Room* in;
-    struct Room* out;
-};
-
-struct Player
-{
-    int hp;
-    int ac;
-    struct Room* room;
-};
+#include "mob.h"
+#include "limits.h"
+#include "player.h"
+#include "room.h"
+#include "strfun.h"
 
 static struct Player* player;
-
-void addMob(struct Room* room, struct Mob* mob)
-{
-    if (room->mobs == NULL)
-    {
-        room->mobs = malloc(sizeof(struct Mob) * MAX_MOBS_PER_ROOM);
-    }
-    room->mobs[room->numberOfMobs++] = mob;
-}
-
-char* convertToLower(char* destination, char* source, int num)
-{
-    int i;
-
-    strncpy(destination, source, num);
-    for (i = 0; i < (int) strlen(destination); i++)
-    {
-        if (isupper(destination[i]))
-        {
-            destination[i] = tolower(destination[i]);
-        }
-    }
-
-    return destination;
-}
-
-
-/*
- * Get the first mob matching the given name, or NULL if no match was found.
- */
-struct Mob* getMobByName(char* name, struct Room* room)
-{
-    int i = 0;
-    char* nameToFind;
-    char* currentName;
-    struct Mob* mob;
-
-    nameToFind = malloc(sizeof(char) * MOB_NAME_MAX_LENGTH);
-    currentName = malloc(sizeof(char) * MOB_NAME_MAX_LENGTH);
-
-    mob = NULL;
-    if (name != NULL)
-    {
-        nameToFind = convertToLower(nameToFind, name, MOB_NAME_MAX_LENGTH);
-        for (i = 0; i < room->numberOfMobs; i++)
-        {
-            currentName = convertToLower(currentName, room->mobs[i]->name, MOB_NAME_MAX_LENGTH);
-            if (strstr(currentName, nameToFind) != NULL)
-            {
-                mob = room->mobs[i];
-                break;
-            }
-        }
-    }
-
-    free(nameToFind);
-    free(currentName);
-
-    return mob;
-}
 
 int getDiceRoll(int min, int max)
 {
@@ -134,31 +42,6 @@ void playerAttack(struct Mob* mob)
     printf("Your axe hacks into %s, dealing %i damage!\n", mob->name, damage);
     if (mob->hp + damage > 0 && mob->hp <= 0)
         printf("You have slain %s!\n", mob->name);
-}
-
-/**
- * Convert the first character of a string to upper case.
- * @param in String to convert.
- * @param out Converted string.
- */
-char* firstCharToUpper(char* in, char* out)
-{
-    if (in == NULL)
-    {
-        out = NULL;
-    }
-    else if (strlen(in) == 0)
-    {
-        out = "";
-    }
-    else
-    {
-        strncpy(out, in, MOB_NAME_MAX_LENGTH);
-        if (islower(out[0]))
-            out[0] = toupper(out[0]);
-    }
-
-    return out;
 }
 
 void mobAttack(struct Mob* mob)
@@ -270,49 +153,6 @@ int travel(enum Direction dir)
     }
 }
 
-struct Room* createRoom(char* name)
-{
-    struct Room* room;
-    
-    room = malloc(sizeof(struct Room));
-    room->name = malloc(30);
-    room->mobs = NULL;
-
-    strcpy(room->name, name);
-    room->north = NULL;
-    room->south = NULL;
-    room->east = NULL;
-    room->west = NULL;
-    room->up = NULL;
-    room->down = NULL;
-    room->in = NULL;
-    room->out = NULL;
-
-    return room;
-}
-
-struct Mob* createMob(char* name, int hp, int ac)
-{
-    struct Mob* mob;
-    mob = malloc(sizeof(struct Mob));
-    mob->name = name;
-    mob->hp = hp;
-    mob->ac = ac;
-    mob->aggro = 0;
-
-    return mob;
-}
-
-void destroyRoom(struct Room* room)
-{
-    if (room == NULL)
-        return;
-
-    free(room->name);
-    free(room->mobs);
-    free(room);
-}
-
 /**
  * Print a room's name and description.
  * @param room Room to print.
@@ -391,33 +231,6 @@ void printVitals()
     printf("[HP: %i] ", player->hp);
 }
 
-/**
- * Trim whitespace surrounding a string.
- * @param str String to trim.
- */
-char* trim(char* str)
-{
-    int i;
-
-    /* Trim start */
-    for (i = 0; (size_t) i < strlen(str); i++)
-    {
-        if (!isspace(str[i]))
-            break;
-        str++;
-    }
-
-    /* Trim end */
-    for (i = (int) strlen(str) - 1; i >= 0; i--)
-    {
-        if (!isspace(str[i]))
-            break;
-        str[i] = '\0';
-    }
-
-    return str;
-}
-
 struct Room* initWorld(struct Room* rooms[])
 {
     struct Room* parlor;
@@ -459,11 +272,6 @@ struct Room* initWorld(struct Room* rooms[])
     rooms[5] = bathroom;
 
     return parlor;
-}
-
-int startsWith(char* string, char* target)
-{
-    return strncmp(string, target, strlen(target)) == 0;
 }
 
 char* getInput(char* buffer)
