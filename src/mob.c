@@ -6,14 +6,14 @@
 #include "mob.h"
 #include "strfun.h"
 
-struct Mob* createMob(char* name, int hp, int ac)
+struct Npc* createNpc(char* name, int hitPoints, int armorClass)
 {
-    struct Mob* mob;
-    mob = malloc(sizeof(struct Mob));
-    mob->name = name;
-    mob->hp = hp;
-    mob->ac = ac;
-    mob->aggro = 0;
+    struct Npc* npc;
+    npc = malloc(sizeof(struct Npc));
+    npc->name = name;
+    npc->hitPoints = hitPoints;
+    npc->armorClass = armorClass;
+    npc->hostile = 0;
 
-    return mob;
+    return npc;
 }

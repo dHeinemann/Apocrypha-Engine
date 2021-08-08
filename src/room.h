@@ -9,7 +9,7 @@ struct Room
 {
     char* name;
 
-    struct Mob** mobs;
+    struct Npc** mobs;
     int numberOfMobs;
 
     /* Exits */
@@ -26,9 +26,9 @@ struct Room
 /**
  * Add a mob to a room.
  * @param room Room to add mob to.
- * @param mob Mob to add.
+ * @param mob Npc to add.
  */
-void addMob(struct Room* room, struct Mob* mob);
+void addMob(struct Room* room, struct Npc* mob);
 
 /**
  * Create a new room.
@@ -46,6 +46,6 @@ void destroyRoom(struct Room* room);
 /*
  * Get the first mob matching the given name, or NULL if no match was found.
  */
-struct Mob* getMobByName(char* name, struct Room* room);
+struct Npc* getMobByName(char* name, struct Room* room);
 
 #endif

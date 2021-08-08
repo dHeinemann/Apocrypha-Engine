@@ -5,20 +5,20 @@
 #ifndef MOB_H
 #define MOB_H
 
-struct Mob
+struct Npc
 {
     char* name;
-    int hp;
-    int ac;
-    int aggro;
+    int hitPoints;
+    int armorClass;
+    int hostile;
 };
 
 /*
- * Create a new mob.
- * @param name Mob's name.
- * @param hp Mob's hit points.
- * @param ac Mob's armor class.
+ * Create a new NPC.
+ * @param name NPC's name.
+ * @param hitPoints NPC's hit points.
+ * @param armorClass NPC's armor class.
  */
-struct Mob* createMob(char* name, int hp, int ac);
+struct Npc* createNpc(char* name, int hitPoints, int armorClass);
 
 #endif

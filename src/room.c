@@ -7,11 +7,11 @@
 #include "room.h"
 #include "strfun.h"
 
-void addMob(struct Room* room, struct Mob* mob)
+void addMob(struct Room* room, struct Npc* mob)
 {
     if (room->mobs == NULL)
     {
-        room->mobs = malloc(sizeof(struct Mob) * MAX_MOBS_PER_ROOM);
+        room->mobs = malloc(sizeof(struct Npc) * MAX_MOBS_PER_ROOM);
     }
     room->mobs[room->numberOfMobs++] = mob;
 }
@@ -51,12 +51,12 @@ void destroyRoom(struct Room* room)
     free(room);
 }
 
-struct Mob* getMobByName(char* name, struct Room* room)
+struct Npc* getMobByName(char* name, struct Room* room)
 {
     int i = 0;
     char* nameToFind;
     char* currentName;
-    struct Mob* mob;
+    struct Npc* mob;
 
     nameToFind = malloc(sizeof(char) * MOB_NAME_MAX_LENGTH);
     currentName = malloc(sizeof(char) * MOB_NAME_MAX_LENGTH);

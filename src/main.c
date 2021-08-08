@@ -26,9 +26,9 @@ int getDiceRoll(int min, int max)
 
 /**
  * Resolve the player's attack against a mob.
- * @param mob Mob to attack.
+ * @param mob Npc to attack.
  */
-void playerAttack(struct Mob* mob)
+void playerAttack(struct Npc* mob)
 {
     int attack;
     int damage;
@@ -39,9 +39,9 @@ void playerAttack(struct Mob* mob)
         return;
     }
 
-    mob->aggro = 1;
+    mob->hostile = 1;
     attack = getDiceRoll(1, 20);
-    if (attack < mob->ac)
+    if (attack < mob->armorClass)
     {
         printf("Your attack misses %s!\n", mob->name);
         return;
@@ -49,37 +49,37 @@ void playerAttack(struct Mob* mob)
 
     damage = getDiceRoll(1, 6);
 
-    mob->hp -= damage;
+    mob->hitPoints -= damage;
     printf("Your axe hacks into %s, dealing %i damage!\n", mob->name, damage);
-    if (mob->hp + damage > 0 && mob->hp <= 0)
+    if (mob->hitPoints + damage > 0 && mob->hitPoints <= 0)
         printf("You have slain %s!\n", mob->name);
 }
 
 /**
  * Resolve a mob's attack against the player.
- * @param mob Mob whose attack to resolve.
+ * @param mob Npc whose attack to resolve.
  */
-void mobAttack(struct Mob* mob)
+void mobAttack(struct Npc* mob)
 {
     int attack;
     int damage;
     char* mobName;
 
-    if (mob == NULL || mob->hp <= 0)
+    if (mob == NULL || mob->hitPoints <= 0)
         return;
 
     mobName = malloc(MOB_NAME_MAX_LENGTH);
     firstCharToUpper(mob->name, mobName);
 
     attack = getDiceRoll(1, 20);
-    if (attack < player->ac)
+    if (attack < player->armorClass)
     {
         printf("%s misses their attack!\n", mobName);
     }
     else
     {
         damage = getDiceRoll(1, 6);
-        player->hp -= damage;
+        player->hitPoints -= damage;
         printf("%s slashes at you violently, dealing %i damage!\n",  mobName, damage);
     }
 
@@ -93,8 +93,8 @@ void mobAttack(struct Mob* mob)
 int resolveCombat(char* target)
 {
     int i;
-    struct Mob* targetMob;
-    struct Mob* currentMob;
+    struct Npc* targetMob;
+    struct Npc* currentMob;
 
     if (player->room->numberOfMobs == 0)
     {
@@ -117,13 +117,13 @@ int resolveCombat(char* target)
     for (i = 0; i < player->room->numberOfMobs; i++)
     {
         currentMob = player->room->mobs[i];
-        if (currentMob->hp > 0 && currentMob->aggro)
+        if (currentMob->hitPoints > 0 && currentMob->hostile)
         {
             mobAttack(currentMob);
         }
     }
 
-    if (player->hp <= 0)
+    if (player->hitPoints <= 0)
     {
         printf("Oh dear, you are dead!\n");
         exit(0);
@@ -226,7 +226,7 @@ void printExits(struct Room* room)
  */
 void printVitals()
 {
-    printf("[HP: %i] ", player->hp);
+    printf("[HP: %i] ", player->hitPoints);
 }
 
 /**
@@ -249,7 +249,7 @@ struct Room* initWorld(struct Room* rooms[])
     bedroom = createRoom("Bedroom");
     bathroom = createRoom("Bathroom");
 
-    addMob(parlor, createMob("an orc", 6, 8));
+    addMob(parlor, createNpc("an orc", 6, 8));
 
     parlor->west = livingRoom;
     livingRoom->east = parlor;
@@ -297,8 +297,8 @@ char* getInput(char* buffer)
 void initPlayer()
 {
     player = malloc(sizeof(struct Player));
-    player->hp = 6;
-    player->ac = 12;
+    player->hitPoints = 6;
+    player->armorClass = 12;
 }
 
 void mainLoop()
