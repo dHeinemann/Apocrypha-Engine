@@ -39,10 +39,13 @@ struct Room* createRoom(char* name)
 
 void destroyRoom(struct Room* room)
 {
+    int i;
+
     if (room == NULL)
         return;
 
     free(room->name);
+    for (i = 0; i < room->numberOfMobs; i++) free(room->mobs[i]);
     free(room->mobs);
     free(room);
 }

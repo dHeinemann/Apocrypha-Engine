@@ -10,13 +10,24 @@
 #include "room.h"
 #include "strfun.h"
 
+/**
+ * State of the player character.
+ */
 static struct Player* player;
 
+/**
+ * Calculate a random number between two values (inclusive).
+ * @returns Calculated result.
+ */
 int getDiceRoll(int min, int max)
 {
     return rand() % max + min;
 }
 
+/**
+ * Resolve the player's attack against a mob.
+ * @param mob Mob to attack.
+ */
 void playerAttack(struct Mob* mob)
 {
     int attack;
@@ -44,6 +55,10 @@ void playerAttack(struct Mob* mob)
         printf("You have slain %s!\n", mob->name);
 }
 
+/**
+ * Resolve a mob's attack against the player.
+ * @param mob Mob whose attack to resolve.
+ */
 void mobAttack(struct Mob* mob)
 {
     int attack;
@@ -115,32 +130,13 @@ int resolveCombat(char* target)
     return 1;
 }
 
-enum Direction
+/**
+ * Travel to another room.
+ * @param destination Room to travel to.
+ * @result True if successful, otherwise False.
+ */
+int travel(struct Room* destination)
 {
-    DIRECTION_NORTH,
-    DIRECTION_SOUTH,
-    DIRECTION_EAST,
-    DIRECTION_WEST,
-    DIRECTION_UP,
-    DIRECTION_DOWN,
-    DIRECTION_IN,
-    DIRECTION_OUT
-};
-
-int travel(enum Direction dir)
-{
-    struct Room* destination;
-
-    destination = NULL;
-    if (dir == DIRECTION_NORTH) { destination = player->room->north; }
-    if (dir == DIRECTION_SOUTH) { destination = player->room->south; }
-    if (dir == DIRECTION_EAST)  { destination = player->room->east;  }
-    if (dir == DIRECTION_WEST)  { destination = player->room->west;  }
-    if (dir == DIRECTION_UP)    { destination = player->room->up;    }
-    if (dir == DIRECTION_DOWN)  { destination = player->room->down;  }
-    if (dir == DIRECTION_IN)    { destination = player->room->in;    }
-    if (dir == DIRECTION_OUT)   { destination = player->room->out;   }
-
     if (destination != NULL)
     {
         player->room = destination;
@@ -231,6 +227,10 @@ void printVitals()
     printf("[HP: %i] ", player->hp);
 }
 
+/**
+ * Create the world.
+ * @returns The starting room.
+ */
 struct Room* initWorld(struct Room* rooms[])
 {
     struct Room* parlor;
@@ -274,6 +274,11 @@ struct Room* initWorld(struct Room* rooms[])
     return parlor;
 }
 
+/**
+ * Get the player's input.
+ * @param buffer Buffer to store input in.
+ * @result Pointer to buffer.
+ */
 char* getInput(char* buffer)
 {
     fgets(buffer, INPUT_LEN, stdin);
@@ -283,26 +288,20 @@ char* getInput(char* buffer)
     return buffer;
 }
 
-int main()
+void initPlayer()
 {
-    int i;
-    char* input;
-    struct Room* rooms[6];
-    int changedRooms;
-    char* token;
-
-    srand(time(NULL)); /* Seed RNG */
-
-    input = malloc(sizeof(char) * INPUT_LEN);
-
     player = malloc(sizeof(struct Player));
     player->hp = 6;
     player->ac = 12;
-    player->room = initWorld(rooms);
-    printRoom(player->room);
-    printMobs(player->room);
-    printExits(player->room);
+}
 
+void runMainLoop()
+{
+    char* input;
+    int changedRooms;
+    char* token;
+
+    input = malloc(sizeof(char) * INPUT_LEN);
     changedRooms = 0;
     while (1)
     {
@@ -321,35 +320,35 @@ int main()
 
         if (strcmp(input, "n") == 0 || strcmp(input, "north") == 0)
         {
-            changedRooms = travel(DIRECTION_NORTH);
+            changedRooms = travel(player->room->north);
         }
         else if (strcmp(input, "s") == 0 || strcmp(input, "south") == 0)
         {
-            changedRooms = travel(DIRECTION_SOUTH);
+            changedRooms = travel(player->room->south);
         }
         else if (strcmp(input, "e") == 0 || strcmp(input, "east") == 0)
         {
-            changedRooms = travel(DIRECTION_EAST);
+            changedRooms = travel(player->room->east);
         }
         else if (strcmp(input, "w") == 0 || strcmp(input, "west") == 0)
         {
-            changedRooms = travel(DIRECTION_WEST);
+            changedRooms = travel(player->room->west);
         }
         else if (strcmp(input, "u") == 0 || strcmp(input, "up") == 0)
         {
-            changedRooms = travel(DIRECTION_UP);
+            changedRooms = travel(player->room->up);
         }
         else if (strcmp(input, "d") == 0 || strcmp(input, "down") == 0)
         {
-            changedRooms = travel(DIRECTION_DOWN);
+            changedRooms = travel(player->room->down);
         }
         else if (strcmp(input, "in") == 0 || strcmp(input, "inside") == 0)
         {
-            changedRooms = travel(DIRECTION_IN);
+            changedRooms = travel(player->room->in);
         }
         else if (strcmp(input, "out") == 0 || strcmp(input, "outside") == 0)
         {
-            changedRooms = travel(DIRECTION_OUT);
+            changedRooms = travel(player->room->out);
         }
         else if (startsWith(input, "kill"))
         {
@@ -384,6 +383,24 @@ int main()
     }
 
     free(input);
+}
+
+int main()
+{
+    int i;
+    struct Room* rooms[6];
+
+    srand(time(NULL)); /* Seed RNG */
+
+    initPlayer();
+    player->room = initWorld(rooms);
+
+    printRoom(player->room);
+    printMobs(player->room);
+    printExits(player->room);
+
+    runMainLoop();
+
     for (i = 0; i < 6; i++)
     {
         destroyRoom(rooms[i]);
