@@ -1,14 +1,29 @@
+/*
+ * Apocrypha Tech Demo
+ * Copyright (C) 2021 David Heinemann
+ * 
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 3 of the License, or (at your
+ * option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. GNU General Public License for more
+ * details.
+ */
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-#include "npc.h"
-#include "limits.h"
-#include "player.h"
-#include "room.h"
-#include "strfun.h"
+#include "../src/npc.h"
+#include "../src/limits.h"
+#include "../src/player.h"
+#include "../src/room.h"
+#include "../src/strfun.h"
 
 /**
  * State of the player character.

@@ -1,2 +1,4 @@
 .vscode/
-linux/*
+sample/*.c.*
+sample/*.o
+sample/demo
