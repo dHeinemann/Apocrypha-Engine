@@ -19,11 +19,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "../src/npc.h"
-#include "../src/limits.h"
-#include "../src/player.h"
-#include "../src/room.h"
-#include "../src/strfun.h"
+#include "../src/apoc.h"
 
 /**
  * State of the player character.
