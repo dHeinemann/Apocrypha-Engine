@@ -43,11 +43,21 @@ void playerAttack(struct Npc* npc)
 {
     int attack;
     int damage;
+    struct Item* weapon;
+    int needToFreeWeapon;
 
     if (npc == NULL)
     {
         printf("There's nobody there!\n");
         return;
+    }
+
+    needToFreeWeapon = 0;
+    weapon = player->equipment->mainHand;
+    if (weapon == NULL)
+    {
+        needToFreeWeapon = 1;
+        weapon = createWeapon("fists", 0, 1, 4, NULL);
     }
 
     npc->hostile = 1;
@@ -58,12 +68,15 @@ void playerAttack(struct Npc* npc)
         return;
     }
 
-    damage = getDiceRoll(1, 6);
+    damage = getDiceRoll(weapon->damageDiceNumber, weapon->damageDiceSize);
 
     npc->hitPoints -= damage;
-    printf("Your axe hacks into %s, dealing %i damage!\n", npc->name, damage);
+    printf("Your %s wounds %s, dealing %i damage!\n", weapon->name, npc->name, damage);
     if (npc->hitPoints + damage > 0 && npc->hitPoints <= 0)
         printf("You have slain %s!\n", npc->name);
+
+    if (needToFreeWeapon)
+        destroyItem(weapon);
 }
 
 /**
@@ -118,7 +131,7 @@ int resolveCombat(char* target)
 
     if (strlen(target) <= 2)
     {
-        printf("Be more specific. Lives are at stake here!\n");
+        printf("Be more specific.\n");
         return 0;
     }
 
@@ -141,6 +154,92 @@ int resolveCombat(char* target)
     }
 
     return 1;
+}
+
+void getItem(char* name)
+{
+    int i;
+    struct Item* item;
+
+    if (player->itemsInInventory >= MAX_INVENTORY_SIZE)
+    {
+        printf("You cannot carry any more items.\n");
+        return;
+    }
+
+    if (strlen(name) <= 2)
+    {
+        printf("Be more specific.\n");
+        return;
+    }
+
+    item = getRoomItemByName(name, player->room);
+    if (item == NULL)
+    {
+        printf("You don't see that here.\n");
+        return;
+    }
+
+    /* Add item to player's inventory. */
+    for (i = 0; i < MAX_INVENTORY_SIZE; i++)
+    {
+        if (player->inventory[i] == NULL)
+        {
+            player->inventory[i] = item;
+            player->itemsInInventory++;
+            break;
+        }
+    }
+
+    /* Remove item from room. */
+    for (i = 0; i < ROOM_MAX_ITEMS; i++)
+    {
+        if (player->room->items[i] == item)
+        {
+            player->room->items[i] = NULL;
+            player->room->numberOfItems--;
+        }
+    }
+
+    printf("You pick up the %s.", item->name);
+}
+
+void equip(char* name)
+{
+    int i;
+    struct Item* item;
+
+    if (strlen(name) <= 2)
+    {
+        printf("Be more specific.\n");
+        return;
+    }
+
+    item = getInventoryItemByName(name, player);
+    if (item == NULL)
+    {
+        printf("You don't have that.\n");
+        return;
+    }
+
+    if (item->isWeapon)
+    {
+        player->equipment->mainHand = item;
+    }
+    /* todo: armor, shields, etc. */
+
+    /* Remove item from player's inventory. */
+    for (i = 0; i < MAX_INVENTORY_SIZE; i++)
+    {
+        if (player->inventory[i] == item)
+        {
+            player->inventory[i] = NULL;
+            player->itemsInInventory--;
+            break;
+        }
+    }
+
+    printf("You equip the %s.", item->name);
 }
 
 /**
@@ -189,9 +288,10 @@ void printNpcs(struct Room* room, int showNoNpcsMessage)
 
     npcName = malloc(NPC_NAME_MAX_LENGTH);
 
-    if (room->numberOfNpcs == 0 && showNoNpcsMessage)
+    if (room->numberOfNpcs == 0)
     {
-        printf("You don't see anybody here.");
+        if (showNoNpcsMessage)
+            printf("You don't see anybody here.");
     }
     else if (room->numberOfNpcs == 1)
     {
@@ -219,6 +319,43 @@ void printNpcs(struct Room* room, int showNoNpcsMessage)
     }
 
     free(npcName);
+}
+
+void printItems(struct Room* room, int showNoItemsMessage)
+{
+    int i;
+    char* itemName;
+
+    itemName = malloc(sizeof(char) * ITEM_NAME_MAX_LENGTH);
+
+    if (room->numberOfItems == 0)
+    {
+        if (showNoItemsMessage)
+            printf("There are no items here.");
+    }
+    else
+    {
+        printf("You see ");
+        for (i = 0; i < room->numberOfNpcs; i++)
+        {
+            if (room->numberOfNpcs > 1 && i == room->numberOfNpcs - 1)
+            {
+                printf("and ");
+            }
+
+            printf(firstCharToUpper(itemName, room->items[i]->name));
+            if (i == room->numberOfItems - 1)
+            {
+                printf(".");
+            }
+            else
+            {
+                printf(", ");
+            }
+        }
+    }
+
+    free(itemName);
 }
 
 /**
@@ -255,17 +392,25 @@ struct Room* initWorld(struct Room* rooms[])
 {
     struct Room* shack;
     struct Room* cellar;
+    int error;
 
     shack = createRoom("Abandoned Shack", "You stand inside an abandoned, rundown shack. The windows have been "
         "boarded up from the inside. In the corner is a ladder descending downward.");
     cellar = createRoom("Spooky Cellar", "It is dark here. You are likely to be eaten by a grue.");
 
     addNpc(shack, createNpc("an orc", 6, 8));
+    addItem(shack, createWeapon("copper spear", 0, 1, 6, &error));
     shack->down = cellar;
     cellar->up = shack;
 
     rooms[0] = shack;
     rooms[1] = cellar;
+
+    if (error != 0)
+    {
+        printf("Failed to initialize world: %s\n", errorToString(error));
+        exit(1);
+    }
 
     return shack;
 }
@@ -288,11 +433,28 @@ char* getInput(char* buffer)
     return buffer;
 }
 
-void initPlayer()
+void createPlayer()
 {
     player = malloc(sizeof(struct Player));
     player->hitPoints = 6;
     player->armorClass = 12;
+
+    player->equipment = malloc(sizeof(struct EquipmentLoadout));
+    player->inventory = malloc(sizeof(struct Item*) * MAX_INVENTORY_SIZE);
+    player->itemsInInventory = 0;
+}
+
+void destroyPlayer()
+{
+    int i;
+
+    for (i = 0; i < MAX_INVENTORY_SIZE; i++) free(player->inventory[i]);
+    free(player->inventory);
+    destroyItem(player->equipment->body);
+    destroyItem(player->equipment->offHand);
+    destroyItem(player->equipment->mainHand);
+    free(player->equipment);
+    free(player);
 }
 
 void printRoomDetailed(struct Room* room)
@@ -300,6 +462,8 @@ void printRoomDetailed(struct Room* room)
     printRoom(room);
     printf(" ");
     printNpcs(room, 0);
+    printf("\n");
+    printItems(room, 0);
     printf("\n");
     printExits(room);
     printf("\n");
@@ -358,6 +522,32 @@ void mainLoop()
         {
             changedRooms = travel(player->room->out);
         }
+        else if (startsWith(input, "get"))
+        {
+            token = strtok(input, " "); /* first token will be "get" */
+            token = strtok(NULL, " "); /* second token should be item name */
+            if (token != NULL && strlen(token) > 0)
+            {
+                getItem(token);
+            }
+            else
+            {
+                printf("Get what?\n");
+            }
+        }
+        else if (startsWith(input, "wield") || startsWith(input, "equip"))
+        {
+            token = strtok(input, " "); /* first token will be "wield" or "equip", etc. */
+            token = strtok(NULL, " "); /* second token should be item name */
+            if (token != NULL && strlen(token) > 0)
+            {
+                equip(token);
+            }
+            else
+            {
+                printf("Equip what?\n");
+            }
+        }
         else if (startsWith(input, "kill"))
         {
             token = strtok(input, " "); /* first token will be "kill" */
@@ -385,6 +575,11 @@ void mainLoop()
             printNpcs(player->room, 1);
             printf("\n");
         }
+        else if (strcmp(input, "items") == 0)
+        {
+            printItems(player->room, 1);
+            printf("\n");
+        }
         else if (strcmp(input, "q") == 0 || strcmp(input, "quit") == 0)
         {
             break;
@@ -405,7 +600,7 @@ int main()
 
     srand(time(NULL)); /* Seed RNG */
 
-    initPlayer();
+    createPlayer();
     player->room = initWorld(rooms);
 
     printRoomDetailed(player->room);
@@ -415,6 +610,8 @@ int main()
     {
         destroyRoom(rooms[i]);
     }
+
+    destroyPlayer();
 
     return 0;
 }

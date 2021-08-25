@@ -30,8 +30,13 @@ struct Room
     char* name;
     char* description;
 
+    /* NPCs */
     struct Npc** npcs;
     int numberOfNpcs;
+
+    /* Items */
+    struct Item** items;
+    int numberOfItems;
 
     /* Exits */
     struct Room* north;
@@ -52,6 +57,13 @@ struct Room
 void addNpc(struct Room* room, struct Npc* npc);
 
 /**
+ * Add an Item to a room.
+ * @param room Room to add Item to.
+ * @param npc Item to add.
+ */
+void addItem(struct Room* room, struct Item* item);
+
+/**
  * Create a new room.
  * @param name Name of room.
  * @returns The created room.
@@ -68,5 +80,10 @@ void destroyRoom(struct Room* room);
  * Get the first mob matching the given name, or NULL if no match was found.
  */
 struct Npc* getNpcByName(char* name, struct Room* room);
+
+/*
+ * Get the first item matching the given name, or NULL if no match was found.
+ */
+struct Item* getRoomItemByName(char* name, struct Room* room);
 
 #endif

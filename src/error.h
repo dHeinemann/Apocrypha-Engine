@@ -18,15 +18,26 @@
  * along with Apocrypha. If not, see * <https://www.gnu.org/licenses/>.
  */
 
-#ifndef APOC_H
-#define APOC_H
+#ifndef ERROR_H
+#define ERROR_H
 
-#include "error.h"
-#include "item.h"
-#include "limits.h"
-#include "npc.h"
-#include "player.h"
-#include "room.h"
-#include "strfun.h"
+/*
+ * Represents a type of error that has occurred.
+ */
+enum Error
+{
+    ERROR_NONE,
+
+    /* An argument's length is too long or too short. */
+    ERROR_INVALID_ARGUMENT_LENGTH,
+
+    /* MALLOC failed due to lack of memory. */
+    ERROR_OUT_OF_MEMORY
+};
+
+/*
+ * Convert an error number to a string.
+ */
+char* errorToString(enum Error error);
 
 #endif

@@ -41,4 +41,9 @@ struct Npc
  */
 struct Npc* createNpc(char* name, int hitPoints, int armorClass);
 
+/*
+ * Destroy an NPC.
+ */
+void destroyNpc(struct Npc* npc);
+
 #endif

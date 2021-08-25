@@ -30,9 +30,14 @@
 /* Rooms */
 #define ROOM_NAME_MAX_LENGTH 30
 #define ROOM_DESCRIPTION_MAX_LENGTH 200
+#define ROOM_MAX_NPCS 10
+#define ROOM_MAX_ITEMS 10
 
 /* NPCs */
-#define NPC_NAME_MAX_LENGTH 10
-#define MAX_NPCS_PER_ROOM 10
+#define NPC_NAME_MAX_LENGTH 30
+
+/* Items */
+#define ITEM_NAME_MAX_LENGTH 30
+#define MAX_INVENTORY_SIZE 10
 
 #endif

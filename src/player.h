@@ -21,11 +21,28 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "item.h"
+
+struct EquipmentLoadout
+{
+    struct Item* body;
+    struct Item* offHand;
+    struct Item* mainHand;
+};
+
 struct Player
 {
     int hitPoints;
     int armorClass;
+
+    struct EquipmentLoadout* equipment;
+
+    struct Item** inventory;
+    int itemsInInventory;
+
     struct Room* room;
 };
+
+struct Item* getInventoryItemByName(char* name, struct Player* player);
 
 #endif

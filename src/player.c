@@ -1,7 +1,7 @@
 /*
  * Apocrypha, a text adventure game engine
  * Copyright (C) 2021 David Heinemann
- * 
+ *
  * This file is part of Apocrypha.
  *
  * Apocrypha is free software: you can redistribute it and/or modify it under
@@ -18,27 +18,40 @@
  * along with Apocrypha. If not, see * <https://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "limits.h"
-#include "npc.h"
+#include "player.h"
 #include "strfun.h"
 
-struct Npc* createNpc(char* name, int hitPoints, int armorClass)
+struct Item* getInventoryItemByName(char* name, struct Player* player)
 {
-    struct Npc* npc;
-    npc = malloc(sizeof(struct Npc));
-    npc->name = name;
-    npc->hitPoints = hitPoints;
-    npc->armorClass = armorClass;
-    npc->hostile = 0;
+    int i = 0;
+    char* nameToFind;
+    char* currentName;
+    struct Item* item;
 
-    return npc;
-}
+    nameToFind = malloc(sizeof(char) * ITEM_NAME_MAX_LENGTH);
+    currentName = malloc(sizeof(char) * ITEM_NAME_MAX_LENGTH);
 
-void destroyNpc(struct Npc* npc)
-{
-    free(npc);
+    item = NULL;
+    if (name != NULL)
+    {
+        nameToFind = convertToLower(nameToFind, name, ITEM_NAME_MAX_LENGTH);
+        for (i = 0; i < player->itemsInInventory; i++)
+        {
+            currentName = convertToLower(currentName, player->inventory[i]->name, ITEM_NAME_MAX_LENGTH);
+            if (strstr(currentName, nameToFind) != NULL)
+            {
+                item = player->inventory[i];
+                break;
+            }
+        }
+    }
+
+    free(nameToFind);
+    free(currentName);
+
+    return item;
 }

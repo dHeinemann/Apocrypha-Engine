@@ -18,15 +18,14 @@
  * along with Apocrypha. If not, see * <https://www.gnu.org/licenses/>.
  */
 
-#ifndef APOC_H
-#define APOC_H
+#include <stdlib.h>
 
 #include "error.h"
-#include "item.h"
-#include "limits.h"
-#include "npc.h"
-#include "player.h"
-#include "room.h"
-#include "strfun.h"
 
-#endif
+char* errorToString(enum Error error)
+{
+    if (error == ERROR_INVALID_ARGUMENT_LENGTH) return "Invalid argument length";
+    if (error == ERROR_OUT_OF_MEMORY)  return "Out of memory";
+
+    return NULL;
+}
