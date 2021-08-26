@@ -15,7 +15,7 @@
  * details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with Apocrypha. If not, see * <https://www.gnu.org/licenses/>.
+ * along with Apocrypha. If not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef ERROR_H
