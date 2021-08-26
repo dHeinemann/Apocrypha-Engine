@@ -1,6 +1,6 @@
 # Apocrypha
 
-Apocrypha is a text adventure game engine developed in pure C89.
+Apocrypha is a text adventure game engine written in ANSI C.
 
 ## Supported Platforms
 
