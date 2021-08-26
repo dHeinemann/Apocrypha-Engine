@@ -47,7 +47,7 @@ struct Item* createItem(char* name, int* error)
     }
 
     item->name = malloc(sizeof(char) * ITEM_NAME_MAX_LENGTH);
-    item->name = name;
+    strncpy(item->name, name, ITEM_NAME_MAX_LENGTH);
     item->isWeapon = 0;
     item->isArmor = 0;
 

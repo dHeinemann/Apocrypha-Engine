@@ -43,6 +43,39 @@ struct Player
     struct Room* room;
 };
 
+/**
+ * Create a new Player.
+ */
+struct Player* createPlayer();
+
+/**
+ * Destroy a Player.
+ */
+void destroyPlayer();
+
+/**
+ * Get an inventory item by part or whole name.
+ */
 struct Item* getInventoryItemByName(char* name, struct Player* player);
+
+/**
+ * Get an item from the current room.
+ * @param name Full or partial name of item to get.
+ */
+void getItem(char* name);
+
+/**
+ * Equip an item.
+ * @param name Full or partial name of item to equip.
+ */
+void equipItem(char* name);
+
+/**
+ * Travel to another room.
+ * @param player Player to move.
+ * @param destination Room to travel to.
+ * @result True if successful, otherwise False.
+ */
+int travel(struct Player* player, struct Room* destination);
 
 #endif

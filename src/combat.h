@@ -18,16 +18,36 @@
  * along with Apocrypha. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef APOC_H
-#define APOC_H
+#ifndef COMBAT_H
+#define COMBAT_H
 
-#include "combat.h"
-#include "error.h"
-#include "item.h"
-#include "limits.h"
 #include "npc.h"
 #include "player.h"
-#include "room.h"
-#include "strfun.h"
+
+/**
+ * Calculate a random number between two values (inclusive).
+ * @returns Calculated result.
+ */
+int getDiceRoll(int min, int max);
+
+/**
+ * Resolve the player's attack against an NPC.
+ * @param player Player who is attacking.
+ * @param npc NPC to attack.
+ */
+void playerAttack(struct Player* player, struct Npc* npc);
+
+/**
+ * Resolve a npc's attack against the player.
+ * @param npc Npc whose attack to resolve.
+ * @param player Player being attacked.
+ */
+void npcAttack(struct Npc* npc, struct Player* player);
+
+/**
+ * Resolve a combat turn.
+ * @returns 1 if the turn was resolved, or 0 if there was an error.
+ */
+int resolveCombat(struct Player* player, char* target);
 
 #endif

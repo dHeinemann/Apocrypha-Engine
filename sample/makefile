@@ -7,8 +7,11 @@ else
 FLAGS = $(CFLAGS)
 endif
 
-demo: npc.o room.o strfun.o item.o error.o player.o
+demo: npc.o room.o strfun.o item.o error.o player.o combat.o
 	$(CC) $(FLAGS) main.c -o demo *.o
+
+combat.o:
+	$(CC) $(FLAGS) -c ../src/combat.c -o combat.o
 
 player.o:
 	$(CC) $(FLAGS) -c ../src/player.c -o player.o
