@@ -19,11 +19,13 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
-#include "limits.h"
-#include "player.h"
-#include "strfun.h"
+#include "../include/limits.h"
+#include "../include/player.h"
+#include "../include/strfun.h"
+#include "../include/room.h"
 
 struct Player* createPlayer()
 {
@@ -88,7 +90,7 @@ struct Item* getInventoryItemByName(char* name, struct Player* player)
     return item;
 }
 
-void getItem(char* name)
+void getItem(struct Player* player, char* name)
 {
     int i;
     struct Item* item;
@@ -136,7 +138,7 @@ void getItem(char* name)
     printf("You pick up the %s.", item->name);
 }
 
-void equipItem(char* name)
+void equipItem(struct Player* player, char* name)
 {
     int i;
     struct Item* item;

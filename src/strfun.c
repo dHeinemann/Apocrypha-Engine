@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "limits.h"
+#include "../include/limits.h"
 
 char* convertToLower(char* destination, char* source, int num)
 {

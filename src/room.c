@@ -22,11 +22,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "item.h"
-#include "limits.h"
-#include "npc.h"
-#include "room.h"
-#include "strfun.h"
+#include "../include/item.h"
+#include "../include/limits.h"
+#include "../include/npc.h"
+#include "../include/room.h"
+#include "../include/strfun.h"
 
 void addNpc(struct Room* room, struct Npc* npc)
 {

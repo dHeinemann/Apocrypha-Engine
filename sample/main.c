@@ -19,7 +19,12 @@
 #include <string.h>
 #include <time.h>
 
-#include "../src/apoc.h"
+#include "../include/combat.h"
+#include "../include/error.h"
+#include "../include/limits.h"
+#include "../include/npc.h"
+#include "../include/room.h"
+#include "../include/strfun.h"
 
 /**
  * State of the player character.
@@ -233,35 +238,35 @@ void mainLoop()
 
         if (strcmp(input, "n") == 0 || strcmp(input, "north") == 0)
         {
-            changedRooms = travel(player->room->north);
+            changedRooms = travel(player, player->room->north);
         }
         else if (strcmp(input, "s") == 0 || strcmp(input, "south") == 0)
         {
-            changedRooms = travel(player->room->south);
+            changedRooms = travel(player, player->room->south);
         }
         else if (strcmp(input, "e") == 0 || strcmp(input, "east") == 0)
         {
-            changedRooms = travel(player->room->east);
+            changedRooms = travel(player, player->room->east);
         }
         else if (strcmp(input, "w") == 0 || strcmp(input, "west") == 0)
         {
-            changedRooms = travel(player->room->west);
+            changedRooms = travel(player, player->room->west);
         }
         else if (strcmp(input, "u") == 0 || strcmp(input, "up") == 0)
         {
-            changedRooms = travel(player->room->up);
+            changedRooms = travel(player, player->room->up);
         }
         else if (strcmp(input, "d") == 0 || strcmp(input, "down") == 0)
         {
-            changedRooms = travel(player->room->down);
+            changedRooms = travel(player, player->room->down);
         }
         else if (strcmp(input, "in") == 0 || strcmp(input, "inside") == 0)
         {
-            changedRooms = travel(player->room->in);
+            changedRooms = travel(player, player->room->in);
         }
         else if (strcmp(input, "out") == 0 || strcmp(input, "outside") == 0)
         {
-            changedRooms = travel(player->room->out);
+            changedRooms = travel(player, player->room->out);
         }
         else if (startsWith(input, "get"))
         {
@@ -269,7 +274,7 @@ void mainLoop()
             token = strtok(NULL, " "); /* second token should be item name */
             if (token != NULL && strlen(token) > 0)
             {
-                getItem(token);
+                getItem(player, token);
             }
             else
             {
@@ -282,7 +287,7 @@ void mainLoop()
             token = strtok(NULL, " "); /* second token should be item name */
             if (token != NULL && strlen(token) > 0)
             {
-                equipItem(token);
+                equipItem(player, token);
             }
             else
             {

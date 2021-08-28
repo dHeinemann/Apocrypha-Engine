@@ -21,9 +21,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "error.h"
-#include "item.h"
-#include "limits.h"
+#include "../include/error.h"
+#include "../include/item.h"
+#include "../include/limits.h"
 
 struct Item* createItem(char* name, int* error)
 {

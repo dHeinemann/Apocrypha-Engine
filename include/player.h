@@ -62,13 +62,13 @@ struct Item* getInventoryItemByName(char* name, struct Player* player);
  * Get an item from the current room.
  * @param name Full or partial name of item to get.
  */
-void getItem(char* name);
+void getItem(struct Player* player, char* name);
 
 /**
  * Equip an item.
  * @param name Full or partial name of item to equip.
  */
-void equipItem(char* name);
+void equipItem(struct Player* player, char* name);
 
 /**
  * Travel to another room.

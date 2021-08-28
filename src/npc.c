@@ -22,9 +22,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "limits.h"
-#include "npc.h"
-#include "strfun.h"
+#include "../include/limits.h"
+#include "../include/npc.h"
+#include "../include/strfun.h"
 
 struct Npc* createNpc(char* name, int hitPoints, int armorClass)
 {

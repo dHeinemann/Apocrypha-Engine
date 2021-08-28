@@ -20,7 +20,7 @@
 
 #include <stdlib.h>
 
-#include "error.h"
+#include "../include/error.h"
 
 char* errorToString(enum Error error)
 {
